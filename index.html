@@ -1137,143 +1137,246 @@ rel="noopener">
 </div>
 </div>
 
-<script>
-
 /* SETTINGS */
-
+<script>
 const WHATSAPP_NUMBER = "919939951407";
 
 let cart = [];
 let currentCategory = "all";
 
-
 /* ADD TO CART */
+function addItem(name, price) {
+    const existing = cart.find(item => item.name === name);
 
-function addItem(name,price){
-
-    const existing = cart.find(
-        item => item.name === name
-    );
-
-    if(existing){
+    if (existing) {
         existing.quantity++;
-    }else{
+    } else {
         cart.push({
-            name:name,
-            price:price,
-            quantity:1
+            name: name,
+            price: price,
+            quantity: 1
         });
     }
 
     updateCart();
 }
 
+/* UPDATE CART */
+function updateCart() {
+    const cartItems = document.getElementById("cartItems");
+    const totalElement = document.getElementById("total");
+    const topCount = document.getElementById("topCount");
+    const floatingCount = document.getElementById("floatingCount");
+
+    let total = 0;
+    let count = 0;
+
+    if (cart.length === 0) {
+        cartItems.innerHTML = `
+            <div class="empty">
+                Your cart is empty.
+                <br><br>
+                Add something delicious!
+            </div>
+        `;
+    } else {
+        cartItems.innerHTML = "";
+
+        cart.forEach((item, index) => {
+            total += item.price * item.quantity;
+            count += item.quantity;
+
+            cartItems.innerHTML += `
+                <div class="cart-item">
+                    <div class="cart-item-top">
+                        <div>
+                            <div class="cart-item-name">${item.name}</div>
+                            <div class="cart-item-price">
+                                ₹${item.price * item.quantity}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="qty-controls">
+                        <button class="qty-btn"
+                        onclick="changeQuantity(${index}, -1)">−</button>
+
+                        <strong>${item.quantity}</strong>
+
+                        <button class="qty-btn"
+                        onclick="changeQuantity(${index}, 1)">+</button>
+
+                        <button class="remove"
+                        onclick="removeItem(${index})">
+                        Remove
+                        </button>
+                    </div>
+                </div>
+            `;
+        });
+    }
+
+    totalElement.textContent = "₹" + total;
+    topCount.textContent = count;
+    floatingCount.textContent = count;
+}
 
 /* CHANGE QUANTITY */
-
-function changeQuantity(index,amount){
-
+function changeQuantity(index, amount) {
     cart[index].quantity += amount;
 
-    if(cart[index].quantity <= 0){
-        cart.splice(index,1);
+    if (cart[index].quantity <= 0) {
+        cart.splice(index, 1);
     }
 
     updateCart();
 }
 
-
-/* REMOVE */
-
-function removeItem(index){
-
-    cart.splice(index,1);
-
+/* REMOVE ITEM */
+function removeItem(index) {
+    cart.splice(index, 1);
     updateCart();
 }
 
+/* OPEN CART */
+function openCart() {
+    document.getElementById("cart").classList.add("open");
+}
 
-/* UPDATE CART */
+/* CLOSE CART */
+function closeCart() {
+    document.getElementById("cart").classList.remove("open");
+}
 
-function updateCart(){
+/* CHECKOUT */
+function openCheckout() {
+    if (cart.length === 0) {
+        alert("Your cart is empty! Please add some items first.");
+        return;
+    }
 
-    const cartItems =
-        document.getElementById("cartItems");
+    closeCart();
+    document.getElementById("checkoutModal").classList.add("show");
+}
 
-    const topCount =
-        document.getElementById("topCount");
+/* CLOSE CHECKOUT */
+function closeCheckout() {
+    document.getElementById("checkoutModal").classList.remove("show");
+}
 
-    const floatingCount =
-        document.getElementById("floatingCount");
+/* CATEGORY FILTER */
+function filterCategory(category, button) {
+    currentCategory = category;
 
-    const totalElement =
-        document.getElementById("total");
+    document.querySelectorAll(".category").forEach(btn => {
+        btn.classList.remove("active");
+    });
+
+    button.classList.add("active");
+
+    filterProducts();
+}
+
+/* SEARCH */
+function searchProducts() {
+    filterProducts();
+}
+
+/* FILTER PRODUCTS */
+function filterProducts() {
+    const search = document
+        .getElementById("search")
+        .value
+        .toLowerCase()
+        .trim();
+
+    const products = document.querySelectorAll(".product");
+
+    products.forEach(product => {
+        const name = product.dataset.name.toLowerCase();
+        const category = product.dataset.category;
+
+        const matchesSearch = name.includes(search);
+
+        const matchesCategory =
+            currentCategory === "all" ||
+            category === currentCategory;
+
+        if (matchesSearch && matchesCategory) {
+            product.style.display = "block";
+        } else {
+            product.style.display = "none";
+        }
+    });
+}
+
+/* SEND WHATSAPP ORDER */
+document.getElementById("sendOrder").addEventListener("click", function(event) {
+
+    event.preventDefault();
+
+    const name =
+        document.getElementById("customerName").value.trim();
+
+    const phone =
+        document.getElementById("customerPhone").value.trim();
+
+    const orderType =
+        document.getElementById("orderType").value;
+
+    const address =
+        document.getElementById("customerAddress").value.trim();
+
+    const notes =
+        document.getElementById("orderNotes").value.trim();
+
+    if (!name) {
+        alert("Please enter your name.");
+        return;
+    }
+
+    if (!phone) {
+        alert("Please enter your phone number.");
+        return;
+    }
+
+    if (orderType === "Delivery" && !address) {
+        alert("Please enter your delivery address.");
+        return;
+    }
+
+    let message = `*NEW ORDER - JUSS ALFAM*%0A%0A`;
+
+    message += `*Customer Name:* ${name}%0A`;
+    message += `*Phone:* ${phone}%0A`;
+    message += `*Order Type:* ${orderType}%0A`;
+
+    if (address) {
+        message += `*Address:* ${address}%0A`;
+    }
+
+    message += `%0A*ORDER ITEMS:*%0A`;
 
     let total = 0;
-    let count = 0;
 
+    cart.forEach(item => {
+        const itemTotal = item.price * item.quantity;
+        total += itemTotal;
 
-    if(cart.length === 0){
+        message += `• ${item.name} x ${item.quantity} = ₹${itemTotal}%0A`;
+    });
 
-        cartItems.innerHTML = `
-        <div class="empty">
-        Your cart is empty.
-        <br><br>
-        Add something delicious!
-        </div>
-        `;
+    message += `%0A*TOTAL: ₹${total}*%0A`;
 
-    }else{
+    if (notes) {
+        message += `%0A*Notes:* ${notes}`;
+    }
 
-        cartItems.innerHTML =
-        cart.map((item,index)=>{
+    const whatsappURL =
+        `https://wa.me/${WHATSAPP_NUMBER}?text=${message}`;
 
-            const itemTotal =
-                item.price * item.quantity;
+    window.open(whatsappURL, "_blank");
+});
+</script>
 
-            total += itemTotal;
-
-            count += item.quantity;
-
-            return `
-
-            <div class="cart-item">
-
-            <div class="cart-item-top">
-
-            <div>
-
-            <div class="cart-item-name">
-            ${item.name}
-            </div>
-
-            <div class="cart-item-price">
-            ₹${item.price} × ${item.quantity}
-            = ₹${itemTotal}
-            </div>
-
-            </div>
-
-            </div>
-
-            <div class="qty-controls">
-
-            <button
-            class="qty-btn"
-            onclick="changeQuantity(${index},-1)">
-            −
-            </button>
-
-            <strong>
-            ${item.quantity}
-            </strong>
-
-            <button
-            class="qty-btn"
-            onclick="changeQuantity(${index},1)">
-            +
-            </button>
-
-            <button
-            class="remove"
-     
+    
