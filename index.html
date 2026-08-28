@@ -47,10 +47,12 @@ header{
     justify-content:space-between;
     gap:15px;
 }
-
 .logo{
     font-size:20px;
     font-weight:bold;
+    display:flex;
+    align-items:center;
+    gap:10px;
 }
 
 .logo small{
@@ -59,6 +61,15 @@ header{
     font-size:11px;
     margin-top:3px;
 }
+
+.logo-img{
+    width:48px;
+    height:48px;
+    border-radius:50%;
+    object-fit:cover;
+    border:2px solid #ffd166;
+}
+
 
 .header-actions{
     display:flex;
@@ -713,8 +724,12 @@ footer strong{
 <div class="header-inner">
 
 <div class="logo">
-JUSS ALFAM
-<small>RESTAURANT & SWEETS</small>
+    <img src="62333.webp" alt="JUSS ALFAM" class="logo-img">
+
+    <div>
+        JUSS ALFAM
+        <small>RESTAURANT & SWEETS</small>
+    </div>
 </div>
 
 <div class="header-actions">
